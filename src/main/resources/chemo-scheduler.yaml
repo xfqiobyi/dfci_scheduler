@@ -2,10 +2,15 @@ logging:
   level: INFO
   loggers:
     com.dfci.scheduler: DEBUG
+    org.hibernate.engine: WARN
   appenders:
     - type: console
       threshold: ALL
       timeZone: UTC
       target: stdout
 
-appendix: foo
+database:
+  driverClass: org.h2.Driver
+  user: sa
+  password: sa
+  url: jdbc:h2:./target/scheduler
