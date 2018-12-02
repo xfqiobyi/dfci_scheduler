@@ -1,0 +1,318 @@
+openapi: "3.0.0"
+info:
+  title: "DFCI Chemotherapy Session API"
+  version: "1.0.0"
+  description: "An API for serving data about Chemotherapy sessions and the patients who are signed up for them."
+servers:
+  - url: 'http://localhost:8080'
+tags:
+- name: "Patient"
+  description: "Everything about patients"
+- name: "Session"
+  description: "Everything about chemotherapy sessions"
+paths:
+  '/patients':
+    get:
+      tags:
+        - Patient
+      summary: Search for a patient
+      description: Search for patients by first name, last name and date of  birth
+      parameters:
+        - $ref: '#/components/parameters/FirstNameFilter'
+        - $ref: '#/components/parameters/LastNameFilter'
+        - $ref: '#/components/parameters/DateOfBirthFilter'
+      responses:
+        200:
+          description: OK. The respone body includes the patient queried.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        400:
+          description: Invalid Request.  One of the required parameters was missing.
+        404:
+          description: Not Found.  No patient matching the query was found.
+        500:
+          description: Server Error
+    post:
+      tags:
+        - Patient
+      summary: Add a patient
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Patient"
+      responses:
+        200:
+          description: OK.  The patient was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        500:
+          description: Server Error
+  '/patients/{patient_id}':
+    get:
+      tags:
+        - Patient
+      summary: Retrieve the details for a patient
+      parameters:
+        - $ref: '#/components/parameters/PatientId'
+      responses:
+        200:
+          description: OK. The respone body includes the patient requested.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        404:
+          description: Not Found.  No patient matching the id was found.
+        500:
+          description: Server Error
+    put:
+      tags:
+        - Patient
+      summary: Update a patients information
+      parameters:
+        - $ref: '#/components/parameters/PatientId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Patient"
+      responses:
+        200:
+          description: OK. The patient record was updated.  The response body includes the updated patient record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        404:
+          description: Not Found.  No patient matching the id was found.
+        500:
+          description: Server Error
+    delete:
+      tags:
+        - Patient
+      summary: Delete a patients information
+      parameters:
+        - $ref: '#/components/parameters/PatientId'
+      responses:
+        200:
+          description: OK. The patient record was deleted.
+        404:
+          description: Not Found.  No patient matching the id was found.
+        500:
+          description: Server Error        
+  '/sessions':
+    get:
+      tags:
+        - Session
+      summary: Search for scheduled sessions
+      description: Search for scheduled sessions by some combination of starting date-time, patient id, room id, and/or health care provider id.  At least on filter parameter is required.
+      parameters:
+        - $ref: '#/components/parameters/SessionDateTimeFilter'
+        - $ref: '#/components/parameters/PatientIdFilter'
+        - $ref: '#/components/parameters/RoomIdFilter'
+        - $ref: '#/components/parameters/HealthCareProviderIdFilter'
+      responses:
+        200:
+          description: OK. The respone body includes the patient queried.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+        400:
+          description: Invalid Request.  No valid filter parameters were specified.
+        404:
+          description: Not Found.  No sessions matching the filters was found.
+        500:
+          description: Server Error
+    post:
+      tags:
+        - Session
+      summary: Schedule a session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Session"
+      responses:
+        200:
+          description: OK.  The session was scheduled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        409:
+          description: Conflict.  The room, patient, or health care provider already have a session schedule which overlaps with this one.
+        500:
+          description: Server Error
+  '/sessions/{session_id}':
+    get:
+      tags:
+        - Session
+      summary: Retrieve the details for a scheduled session
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        200:
+          description: OK. The respone body includes the session requested.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        404:
+          description: Not Found.  No session matching the id was found.
+        500:
+          description: Server Error
+    put:
+      tags:
+        - Session
+      summary: Update a sessions information
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Session"
+      responses:
+        200:
+          description: OK. The session record was updated.  The response body includes the updated session record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        404:
+          description: Not Found.  No session matching the id was found.
+        500:
+          description: Server Error
+    delete:
+      tags:
+        - Session
+      summary: Delete a sessions information
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        200:
+          description: OK. The session record was deleted.
+        404:
+          description: Not Found.  No session matching the id was found.
+        500:
+          description: Server Error 
+components:
+  schemas:
+    Patient:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: System assigned ID number for the patient
+        first_name:
+          type: string
+          description: The patients first name
+        last_name:
+          type: string
+          description: The patients last name
+        date_of_birth:
+          type: string
+          format: date
+          description: The patients data of birth in 'yyyy-mm-dd' format
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: System assigned ID number for the session
+        session_date_time:
+          type: string
+          format: date-time
+          description: >
+            The date and start time to find sessions for, in [RFC 3339](https://tools.ietf.org/html/rfc3339#section-5.6) format.  (e.g., 'yyyy-mm-ddThh:mmZ')
+        patient_id:
+          type: integer
+          description: The id of the patient to find sessions for.
+        room_id:
+          type: integer
+          description: The id of the room to find sessions for.
+        health_care_provider_id:
+          type: integer
+          description: The id of the health care provider to find sessions for.
+        session_length:
+          type: integer
+          description: The expected length, in minutes, of the session to schedule.
+    SessionList:
+      type: object
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+  parameters:
+    FirstNameFilter:
+      name: first_name
+      in: query
+      description: The patients first name
+      required: true
+      schema:
+        type: string
+    LastNameFilter:
+      name: last_name
+      in: query
+      description: The patients last name
+      required: true
+      schema:
+        type: string
+    DateOfBirthFilter:
+      name: date_of_birth
+      in: query
+      description: The patients date of birth name
+      required: true
+      schema:
+        type: string
+        format: date
+    PatientId:
+      name: patient_id
+      in: path
+      description: The id of a patient
+      required: true
+      schema:
+        type: integer
+    PatientIdFilter:
+      name: patient_id
+      in: query
+      description: The id of a patient
+      required: false
+      schema:
+        type: integer
+    SessionDateTimeFilter:
+      name: session_date_time
+      in: query
+      description: The date and start time of the session
+      required: false
+      schema:
+        type: string
+        format: date-time
+    RoomIdFilter:
+      name: room_id
+      in: query
+      description: The id of a room
+      required: false
+      schema:
+        type: integer
+    HealthCareProviderIdFilter:
+      name: health_care_provider_id
+      in: query
+      description: The id of a health care provider
+      required: false
+      schema:
+        type: integer
+    SessionId:
+      name: session_id
+      in: path
+      description: The id of a health care provider
+      required: true
+      schema:
+        type: integer
