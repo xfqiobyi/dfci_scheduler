@@ -1,0 +1,11 @@
+logging:
+  level: INFO
+  loggers:
+    com.dfci.scheduler: DEBUG
+  appenders:
+    - type: console
+      threshold: ALL
+      timeZone: UTC
+      target: stdout
+
+appendix: foo
