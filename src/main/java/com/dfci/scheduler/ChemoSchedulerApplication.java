@@ -1,8 +1,9 @@
 package com.dfci.scheduler;
 
-import com.dfci.scheduler.core.Patient;
+import com.dfci.scheduler.model.Patient;
 import com.dfci.scheduler.db.PatientDAO;
 import com.dfci.scheduler.resources.PatientResource;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
@@ -45,6 +46,8 @@ public class ChemoSchedulerApplication extends Application<ChemoSchedulerConfigu
     @Override
     public void run(final ChemoSchedulerConfiguration configuration,
                     final Environment environment) {
+
+        environment.getObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
 
         final PatientDAO patientDAO = new PatientDAO(hibernateBundle.getSessionFactory());
 
